@@ -14,3 +14,7 @@ require "rubocop/rake_task"
 RuboCop::RakeTask.new
 
 task default: %i[test rubocop]
+
+task :autogen do
+  ruby "autogen/parse_formats.rb"
+end
