@@ -8,59 +8,67 @@ class CountryConfig
           code: '{{country_code}}',
           bban_format: '{{bban_format}}',
           iban_length: {{iban_length}},
-          {{#has_national_bank_code}}
+          {{#national_bank_code_regex}}
           bank_code: {{national_bank_code_indexes}},
           bank_code_regex: '{{national_bank_code_regex}}',
-          {{/has_national_bank_code}}
-          {{#has_branch_code}}
+          {{/national_bank_code_regex}}
+          {{#branch_code_regex}}
           branch_code: {{branch_code_indexes}},
           branch_code_regex: '{{branch_code_regex}}',
-          {{/has_branch_code}}
-          {{#has_national_checksum}}
+          {{/branch_code_regex}}
+          {{#national_checksum_regex}}
           national_checksum: {{national_checksum_indexes}},
           national_checksum_regex: '{{national_checksum_regex}}',
-          {{/has_national_checksum}}
-          {{#has_account_number}}
+          {{/national_checksum_regex}}
+          {{#account_number_regex}}
           account_number: {{account_number_indexes}},
           account_number_regex: '{{account_number_regex}}',
-          {{/has_account_number}}
-          {{#has_account_type}}
+          {{/account_number_regex}}
+          {{#account_type_regex}}
           account_type: {{account_type_indexes}},
           account_type_regex: '{{account_type_regex}}',
-          {{/has_account_type}}
-          {{#has_owner_account_number}}
+          {{/account_type_regex}}
+          {{#owner_account_number_regex}}
           owner_account_number: {{owner_account_number_indexes}},
           owner_account_number_regex: '{{owner_account_number_regex}}',
-          {{/has_owner_account_number}}
-          {{#has_currency_code}}
+          {{/owner_account_number_regex}}
+          {{#currency_code_regex}}
           currency_code: {{currency_code_indexes}},
           currency_code_regex: '{{currency_code_regex}}',
-          {{/has_currency_code}}
-          {{#has_zero}}
+          {{/currency_code_regex}}
+          {{#zero_regex}}
           zero: {{zero_indexes}},
           zero_regex: '{{zero_regex}}',
-          {{/has_zero}}
-          {{#has_kennitala}}
+          {{/zero_regex}}
+          {{#kennitala_regex}}
           kennitala: {{kennitala_indexes}},
           kennitala_regex: '{{kennitala_regex}}',
-          {{/has_kennitala}}
-          {{#has_account_prefix}}
+          {{/kennitala_regex}}
+          {{#account_prefix_regex}}
           account_prefix: {{account_prefix_indexes}},
           account_prefix_regex: '{{account_prefix_regex}}',
-          {{/has_account_prefix}}
-          {{#has_bic}}
+          {{/account_prefix_regex}}
+          {{#bic_regex}}
           bic: {{bic_indexes}},
           bic_regex: '{{bic_regex}}',
-          {{/has_bic}}
-          {{#has_balance_account_number}}
+          {{/bic_regex}}
+          {{#balance_account_number_regex}}
           balance_account_number: {{balance_account_number_indexes}},
           balance_account_number_regex: '{{balance_account_number_regex}}',
-          {{/has_balance_account_number}}
+          {{/balance_account_number_regex}}
           regex: '{{regex}}',
           parts: {{parts}},
           {{#const_global_checksum}}
           const_global_checksum: '{{const_global_checksum}}',
           {{/const_global_checksum}}
+          parts_in_order: [
+          {{#parts_in_order}}
+            {
+            part: '{{part}}',
+            indexes: {{indexes}},
+            },
+          {{/parts_in_order}}
+          ]
           },
       {{/countries}}
       }

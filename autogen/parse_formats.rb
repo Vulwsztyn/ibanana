@@ -49,53 +49,43 @@ def add_new_country_to_config(line)
   end
   country_code = iban_format[0...2]
 
-  bban_format_spread = '____'+bban_format.split(',').map do |x|
+  bban_format_spread = '____' + bban_format.split(',').map do |x|
     x.match /(\d+)([a-z])/
     "#{$2}" * $1.to_i
   end.join
 
-  get_indexes = -> x {[iban_format.index(x), iban_format.rindex(x)]}
+  get_indexes = -> x { [iban_format.index(x), iban_format.rindex(x)] }
 
-  national_bank_code_indexes = get_indexes.call('b')
-  branch_code_indexes = get_indexes.call('s')
-  national_checksum_indexes = get_indexes.call('x')
-  account_number_indexes = get_indexes.call('c')
-  account_type_indexes = get_indexes.call('t')
-  owner_account_number_indexes = get_indexes.call('n')
-  currency_code_indexes = get_indexes.call('m')
-  zero_indexes = get_indexes.call('0')
-  kennitala_indexes = get_indexes.call('i')
-  account_prefix_indexes = get_indexes.call('p')
-  bic_indexes = get_indexes.call('q')
-  balance_account_number_indexes = get_indexes.call('a')
+  parts = {
+    bank_code: 'b',
+    branch_code: 's',
+    checksum: 'x',
+    account_number: 'c',
+    account_type: 't',
+    owner_account_number: 'n',
+    currency_code: 'm',
+    zero: '0',
+    kennitala: 'i',
+    account_prefix: 'p',
+    bic: 'q',
+    balance_account_number: 'a',
+  }
+  indexes = parts.keys.map { |k|
+    [k, get_indexes.call(parts[k])]
+  }.to_h
 
-  national_bank_code_regex = subregex(bban_format_spread, national_bank_code_indexes)
-  branch_code_regex = subregex(bban_format_spread, branch_code_indexes)
-  national_checksum_regex = subregex(bban_format_spread, national_checksum_indexes)
-  account_number_regex = subregex(bban_format_spread, account_number_indexes)
-  account_type_regex = subregex(bban_format_spread, account_type_indexes)
-  owner_account_number_regex = subregex(bban_format_spread, owner_account_number_indexes)
-  currency_code_regex = subregex(bban_format_spread, currency_code_indexes)
-  zero_regex = subregex(bban_format_spread, zero_indexes)
-  kennitala_regex = subregex(bban_format_spread, kennitala_indexes)
-  account_prefix_regex = subregex(bban_format_spread, account_prefix_indexes)
-  bic_regex = subregex(bban_format_spread, bic_indexes)
-  balance_account_number_regex = subregex(bban_format_spread, balance_account_number_indexes)
-
-  parts = []
-  parts << 'bank_code' if national_bank_code_regex
-  parts << 'branch_code' if branch_code_regex
-  parts << 'checksum' if national_checksum_regex
-  parts << 'account_number' if account_number_regex
-  parts << 'account_type' if account_type_regex
-  parts << 'owner_account_number' if owner_account_number_regex
-  parts << 'currency_code' if currency_code_regex
-  # parts << 'zero' if zero_regex
-  parts << 'kennitala' if kennitala_regex
-  parts << 'account_prefix' if account_prefix_regex
-  parts << 'bic' if bic_regex
-  parts << 'balance_account_number' if balance_account_number_regex
-
+  regexes = parts.keys.map { |k|
+    [k, subregex(bban_format_spread, indexes[k])]
+  }.to_h
+  parts_as_arr = parts.keys.map { |k|
+    !regexes[k].nil? ? k : nil
+  }.compact
+  parts_in_order = parts.keys.map { |k|
+    !regexes[k].nil? ? {
+      part: k,
+      indexes: indexes[k]
+    } : nil
+  }.compact.sort_by { |x| x[:indexes][0] }
   const_global_checksum = {
     BA: '39',
     TL: '38',
@@ -113,7 +103,7 @@ def add_new_country_to_config(line)
   #
   # b = BIC bank code Bulgaria & Giblartar & Latvia & Mauritania & Netherlands & Romania & UK
   # b = Bank and branch identifier (Bankleitzahl or BLZ) - Deutsch
-  regex = country_code+'\d\d'+bban_format.split(',').map do |x|
+  regex = country_code + '\d\d' + bban_format.split(',').map do |x|
     x.match /(\d+)([a-z])/
     mapping = {
       n: '\d',
@@ -127,46 +117,17 @@ def add_new_country_to_config(line)
       country_name: name,
       country_code: country_code,
       bban_format: bban_format,
-      has_national_bank_code: !national_bank_code_indexes[0].nil?,
-      national_bank_code_indexes: maybe_inc_second(national_bank_code_indexes),
-      national_bank_code_regex: national_bank_code_regex,
-      has_branch_code: !branch_code_indexes[0].nil?,
-      branch_code_indexes: maybe_inc_second(branch_code_indexes),
-      branch_code_regex: branch_code_regex,
-      has_national_checksum: !national_checksum_indexes[0].nil?,
-      national_checksum_indexes: maybe_inc_second(national_checksum_indexes),
-      national_checksum_regex: national_checksum_regex,
-      has_account_number: !account_number_indexes[0].nil?,
-      account_number_indexes: maybe_inc_second(account_number_indexes),
-      account_number_regex: account_number_regex,
-      has_account_type: !account_type_indexes[0].nil?,
-      account_type_indexes: maybe_inc_second(account_type_indexes),
-      account_type_regex: account_type_regex,
-      has_owner_account_number: !owner_account_number_indexes[0].nil?,
-      owner_account_number_indexes: maybe_inc_second(owner_account_number_indexes),
-      owner_account_number_regex: owner_account_number_regex,
-      has_currency_code: !currency_code_indexes[0].nil?,
-      currency_code_indexes: maybe_inc_second(currency_code_indexes),
-      currency_code_regex: currency_code_regex,
-      has_zero: !zero_indexes[0].nil?,
-      zero_indexes: maybe_inc_second(zero_indexes),
-      zero_regex: zero_regex,
-      has_kennitala: !kennitala_indexes[0].nil?,
-      kennitala_indexes: maybe_inc_second(kennitala_indexes),
-      kennitala_regex: kennitala_regex,
-      has_account_prefix: !account_prefix_indexes[0].nil?,
-      account_prefix_indexes: maybe_inc_second(account_prefix_indexes),
-      account_prefix_regex: account_prefix_regex,
-      has_bic: !bic_indexes[0].nil?,
-      bic_indexes: maybe_inc_second(bic_indexes),
-      bic_regex: bic_regex,
-      has_balance_account_number: !balance_account_number_indexes[0].nil?,
-      balance_account_number_indexes: maybe_inc_second(balance_account_number_indexes),
-      balance_account_number_regex: balance_account_number_regex,
       iban_length: len,
       regex: regex,
-      parts: '%w['+parts.join(' ')+']',
+      parts: '%w[' + parts_as_arr.join(' ') + ']',
       const_global_checksum: const_global_checksum[country_code.to_sym],
+      parts_in_order: parts_in_order,
+      **parts.keys.map do |k|
+        [(k.to_s + '_indexes').to_s, maybe_inc_second(indexes[k])]
+      end.to_h,
+      **parts.keys.map do |k|
+        [(k.to_s + '_regex').to_s, regexes[k]]
+      end.to_h,
     } }
 end
 
