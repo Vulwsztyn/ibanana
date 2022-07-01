@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 require_relative "ibanana/version"
+require_relative 'ibanana/ibanana'
+require 'dry/monads'
 
 module Ibanana
-  class Error < StandardError; end
-  # Your code goes here...
+  Iban = ::Iban
 end
