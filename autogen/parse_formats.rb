@@ -1,10 +1,10 @@
-require "mustache"
+# frozen_string_literal: true
+
+require 'mustache'
 require 'pry'
-file = File.open("./autogen/formats_wiki")
+file = File.open('./autogen/formats_wiki')
 
 lines = file.readlines
-
-last_country_code = nil
 
 config = {}
 
@@ -14,6 +14,7 @@ end
 
 def subregex(bban, indexes)
   return nil if indexes[0].nil?
+
   bban_part = bban[indexes[0]..indexes[1]]
 
   mapping = {
@@ -23,22 +24,18 @@ def subregex(bban, indexes)
   }
 
   all_sings_are_the_same = bban_part.chars.all? { |c| c == bban_part[0] }
-  if all_sings_are_the_same
-    return "#{mapping[bban_part[0].to_sym]}{#{bban_part.length}}"
-  end
+  return "#{mapping[bban_part[0].to_sym]}{#{bban_part.length}}" if all_sings_are_the_same
+
   bban_part.split('').map do |x|
-    "#{mapping[x.to_sym]}"
+    (mapping[x.to_sym]).to_s
   end.join
 end
 
 def add_new_country_to_config(line)
   match = /^(?<name>[a-zÀ-ž\s,]+)\s*(?<garbage>\[.*\])*\s*(?<len>\d+)\s*(?<bban_format>(?:\d{1,2}[a-z],*\s*)+)\s*(?<iban_format>(?:[a-z\d]{1,4}\s*)+)\s+(?<rest>\w+\s=.*)/i.match(line)
   unless match
-    if line.strip.length == 0
-      return
-    else
-      raise "Regex workn't"
-    end
+    return if line.strip.length.zero?
+    raise "Regex workn't"
   end
   name = match['name'].strip
   bban_format = match['bban_format'].gsub(/\s+/, '')
@@ -47,14 +44,15 @@ def add_new_country_to_config(line)
   if iban_format.length != len
     raise "Lengths don't match, should be: #{len} but is #{iban_format.length}, iban_format: #{iban_format}"
   end
+
   country_code = iban_format[0...2]
 
   bban_format_spread = '____' + bban_format.split(',').map do |x|
-    x.match /(\d+)([a-z])/
-    "#{$2}" * $1.to_i
+    x.match(/(\d+)([a-z])/)
+    Regexp.last_match(2).to_s * Regexp.last_match(1).to_i
   end.join
 
-  get_indexes = -> x { [iban_format.index(x), iban_format.rindex(x)] }
+  get_indexes = ->(x) { [iban_format.index(x), iban_format.rindex(x)] }
 
   parts = {
     bank_code: 'b',
@@ -70,22 +68,25 @@ def add_new_country_to_config(line)
     bic: 'q',
     balance_account_number: 'a',
   }
-  indexes = parts.keys.map { |k|
+  indexes = parts.keys.map do |k|
     [k, get_indexes.call(parts[k])]
-  }.to_h
+  end.to_h
 
-  regexes = parts.keys.map { |k|
+  regexes = parts.keys.map do |k|
     [k, subregex(bban_format_spread, indexes[k])]
-  }.to_h
-  parts_as_arr = parts.keys.map { |k|
+  end.to_h
+  parts_as_arr = parts.keys.map do |k|
     !regexes[k].nil? ? k : nil
-  }.compact
-  parts_in_order = parts.keys.map { |k|
-    !regexes[k].nil? ? {
+  end.compact
+  parts_in_order = parts.keys.map do |k|
+    next if regexes[k].nil?
+
+    {
       part: k,
-      indexes: indexes[k]
-    } : nil
-  }.compact.sort_by { |x| x[:indexes][0] }
+      indexes: indexes[k],
+      regex: regexes[k],
+    }
+  end.compact.sort_by { |x| x[:indexes][0] }
   const_global_checksum = {
     BA: '39',
     TL: '38',
@@ -104,13 +105,13 @@ def add_new_country_to_config(line)
   # b = BIC bank code Bulgaria & Giblartar & Latvia & Mauritania & Netherlands & Romania & UK
   # b = Bank and branch identifier (Bankleitzahl or BLZ) - Deutsch
   regex = country_code + '\d\d' + bban_format.split(',').map do |x|
-    x.match /(\d+)([a-z])/
+    x.match(/(\d+)([a-z])/)
     mapping = {
       n: '\d',
       a: '[A-Z]',
       c: '[a-zA-Z0-9]',
     }
-    "#{mapping[$2.to_sym]}{#{$1}}"
+    "#{mapping[Regexp.last_match(2).to_sym]}{#{Regexp.last_match(1)}}"
   end.join
   {
     country_code => {
@@ -119,19 +120,20 @@ def add_new_country_to_config(line)
       bban_format: bban_format,
       iban_length: len,
       regex: regex,
-      parts: '%w[' + parts_as_arr.join(' ') + ']',
+      parts: "%w[#{parts_as_arr.join(" ")}]",
       const_global_checksum: const_global_checksum[country_code.to_sym],
       parts_in_order: parts_in_order,
       **parts.keys.map do |k|
-        [(k.to_s + '_indexes').to_s, maybe_inc_second(indexes[k])]
+        ["#{k}_indexes".to_s, maybe_inc_second(indexes[k])]
       end.to_h,
       **parts.keys.map do |k|
-        [(k.to_s + '_regex').to_s, regexes[k]]
+        ["#{k}_regex".to_s, regexes[k]]
       end.to_h,
-    } }
+    },
+  }
 end
 
-def add_line_to_config(line)
+def add_line_to_config(_line)
   nil
 end
 
@@ -149,4 +151,5 @@ lines.each do |line|
 end
 puts config
 puts config.values
-puts File.write("./lib/ibanana/country_config.rb", Mustache.render(File.read("./autogen/template.mustache"), { countries: config.values }))
+puts File.write('./lib/ibanana/country_config.rb',
+                Mustache.render(File.read('./autogen/template.mustache'), { countries: config.values }))

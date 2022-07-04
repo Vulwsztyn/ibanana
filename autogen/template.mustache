@@ -10,51 +10,39 @@ class CountryConfig
           iban_length: {{iban_length}},
           {{#national_bank_code_regex}}
           bank_code: {{national_bank_code_indexes}},
-          bank_code_regex: '{{national_bank_code_regex}}',
           {{/national_bank_code_regex}}
           {{#branch_code_regex}}
           branch_code: {{branch_code_indexes}},
-          branch_code_regex: '{{branch_code_regex}}',
           {{/branch_code_regex}}
           {{#national_checksum_regex}}
           national_checksum: {{national_checksum_indexes}},
-          national_checksum_regex: '{{national_checksum_regex}}',
           {{/national_checksum_regex}}
           {{#account_number_regex}}
           account_number: {{account_number_indexes}},
-          account_number_regex: '{{account_number_regex}}',
           {{/account_number_regex}}
           {{#account_type_regex}}
           account_type: {{account_type_indexes}},
-          account_type_regex: '{{account_type_regex}}',
           {{/account_type_regex}}
           {{#owner_account_number_regex}}
           owner_account_number: {{owner_account_number_indexes}},
-          owner_account_number_regex: '{{owner_account_number_regex}}',
           {{/owner_account_number_regex}}
           {{#currency_code_regex}}
           currency_code: {{currency_code_indexes}},
-          currency_code_regex: '{{currency_code_regex}}',
           {{/currency_code_regex}}
           {{#zero_regex}}
           zero: {{zero_indexes}},
-          zero_regex: '{{zero_regex}}',
           {{/zero_regex}}
           {{#kennitala_regex}}
           kennitala: {{kennitala_indexes}},
-          kennitala_regex: '{{kennitala_regex}}',
           {{/kennitala_regex}}
           {{#account_prefix_regex}}
           account_prefix: {{account_prefix_indexes}},
-          account_prefix_regex: '{{account_prefix_regex}}',
           {{/account_prefix_regex}}
           {{#bic_regex}}
           bic: {{bic_indexes}},
-          bic_regex: '{{bic_regex}}',
           {{/bic_regex}}
           {{#balance_account_number_regex}}
           balance_account_number: {{balance_account_number_indexes}},
-          balance_account_number_regex: '{{balance_account_number_regex}}',
           {{/balance_account_number_regex}}
           regex: '{{regex}}',
           parts: {{parts}},
@@ -66,6 +54,7 @@ class CountryConfig
             {
             part: '{{part}}',
             indexes: {{indexes}},
+            regex: '{{regex}}',
             },
           {{/parts_in_order}}
           ]

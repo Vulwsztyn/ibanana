@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
-require "ibanana"
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+require 'ibanana'
 
-require "minitest/autorun"
+require 'minitest/autorun'
